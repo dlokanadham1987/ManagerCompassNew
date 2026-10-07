@@ -1,0 +1,167 @@
+<section class="view">
+  <div class="kpi-head">
+    <h2>1:1s &mdash; scheduled meetings</h2>
+    <button type="button" class="oto-schedule-btn" (click)="openScheduleModal()">+ Schedule Meeting</button>
+  </div>
+  <span class="sub">Personal working notes, saved on this device &middot; not an official performance record</span>
+
+  <div class="kpi-grid oto-kpi-row">
+    <div class="kpi" [style.--tc]="'#2C7A78'">
+      <div class="label">Direct reports</div>
+      <div class="value">{{ reports.length }}</div>
+      <div class="sub2">tracked here</div>
+    </div>
+    <div class="kpi" [style.--tc]="'#2E8C9C'">
+      <div class="label">Upcoming meetings</div>
+      <div class="value">{{ upcomingMeetings().length }}</div>
+      <div class="sub2">scheduled, not yet held</div>
+    </div>
+    <div class="kpi" [style.--tc]="'#C97F1E'">
+      <div class="label">Follow-ups due</div>
+      <div class="value">{{ dueSoonCount() }}</div>
+      <div class="sub2">within 7 days or overdue</div>
+    </div>
+  </div>
+
+  <div class="panel-head" style="margin-top:22px;">Upcoming</div>
+  <div class="empty" *ngIf="!upcomingMeetings().length">
+    <strong>Nothing scheduled yet.</strong>
+    Click "+ Schedule Meeting" to set up your first 1:1.
+  </div>
+  <ng-container *ngFor="let m of upcomingMeetings()">
+    <ng-container *ngTemplateOutlet="meetingCard; context:{ $implicit: m }"></ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="pastMeetings().length">
+    <div class="panel-head" style="margin-top:26px;">Past</div>
+    <ng-container *ngFor="let m of pastMeetings()">
+      <ng-container *ngTemplateOutlet="meetingCard; context:{ $implicit: m }"></ng-container>
+    </ng-container>
+  </ng-container>
+
+  <div class="meta">These are your personal working notes — not an official performance record. Document formal ratings and reviews in UKG per your Talent Review process.</div>
+</section>
+
+<ng-template #meetingCard let-m>
+  <div class="card oto-meeting-card" [style.--tc]="'#2E8C9C'">
+    <div class="oto-meeting-head">
+      <div>
+        <div class="tile-title">{{ m.reportName }}</div>
+        <div class="sub3">{{ m.startsAt | date:'medium' }} &middot; {{ m.durationMinutes }} min</div>
+      </div>
+      <span class="sub3" *ngIf="m.nextFollowUpDate">Next follow-up: {{ m.nextFollowUpDate }}</span>
+    </div>
+
+    <details class="scope" *ngIf="m.preNotes.length">
+      <summary>Pre notes &mdash; talking points</summary>
+      <div class="scope-body">
+        <ul class="bullet-list">
+          <li *ngFor="let text of m.preNotes">{{ text }}</li>
+        </ul>
+
+        <ng-container *ngIf="!m.aiSummary">
+          <button type="button" class="oto-ai-btn" [disabled]="aiSummaryLoadingId === m.id" (click)="generateAiSummary(m)">
+            <span *ngIf="aiSummaryLoadingId !== m.id">&#10024; Generate AI summary of last 2 weeks</span>
+            <span *ngIf="aiSummaryLoadingId === m.id">Summarizing&hellip;</span>
+          </button>
+        </ng-container>
+        <div class="oto-ai-summary" *ngIf="m.aiSummary">
+          <span class="oto-ai-label">AI summary (illustrative)</span>
+          {{ m.aiSummary }}
+        </div>
+      </div>
+    </details>
+
+    <details class="scope" open>
+      <summary>Post notes ({{ m.postNotes.length }})</summary>
+      <div class="scope-body">
+        <div class="oto-postnote-entry" *ngFor="let n of m.postNotes">
+          <span class="sub3">{{ n.date }}</span>
+          <p>{{ n.text }}</p>
+        </div>
+        <p *ngIf="!m.postNotes.length" style="font-style:italic;">No notes added yet.</p>
+
+        <ul class="checklist" *ngIf="m.actionItems.length">
+          <li *ngFor="let a of m.actionItems; let i = index">
+            <input type="checkbox" [checked]="a.done" (change)="toggleAction(m, i)" [id]="'oto-action-' + m.id + '-' + i" />
+            <label [for]="'oto-action-' + m.id + '-' + i">{{ a.text }}</label>
+          </li>
+        </ul>
+
+        <button type="button" class="oto-postnotes-btn" style="margin-top:8px;" (click)="openPostNotes(m)">
+          {{ postNotesOpenId === m.id ? 'Cancel' : '+ Add post note' }}
+        </button>
+
+        <div class="oto-postnotes-form" *ngIf="postNotesOpenId === m.id">
+          <textarea class="oto-notes" [(ngModel)]="draftPostNoteText" placeholder="What was actually discussed&hellip;"></textarea>
+
+          <div class="oto-action-add">
+            <label [for]="'oto-action-input-' + m.id" style="position:absolute; left:-9999px;">Add a next action</label>
+            <input
+              [id]="'oto-action-input-' + m.id"
+              type="text"
+              placeholder="Add a next action&hellip;"
+              [(ngModel)]="draftActionText"
+              (keyup.enter)="addDraftAction()" />
+            <button type="button" (click)="addDraftAction()">+ Add</button>
+          </div>
+          <ul class="checklist" *ngIf="draftActionItems.length">
+            <li *ngFor="let text of draftActionItems; let i = index">
+              <span class="oto-status-dot" style="background:var(--ink-faint); margin-top:6px;"></span>
+              <label style="flex:1;">{{ text }}</label>
+              <button type="button" class="oto-remove-btn" (click)="removeDraftAction(i)" aria-label="Remove action item">&times;</button>
+            </li>
+          </ul>
+
+          <label class="oto-field" style="max-width:220px; margin-top:10px;">Next follow-up
+            <input type="date" [(ngModel)]="draftFollowUp" />
+          </label>
+
+          <div style="margin-top:10px;">
+            <button type="button" class="oto-save-btn" (click)="savePostNotes(m)">Save note</button>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+</ng-template>
+
+<div class="oto-modal-backdrop" *ngIf="showScheduleModal" (click)="closeScheduleModal()">
+  <div class="oto-modal" (click)="$event.stopPropagation()">
+    <div class="tile-title">Schedule a 1:1</div>
+
+    <label class="oto-field" style="margin-top:12px;">Direct report
+      <select [(ngModel)]="scheduleReportId">
+        <option *ngFor="let r of reports" [value]="r.id">{{ r.name }}</option>
+        <option [value]="newReportValue">+ New person&hellip;</option>
+      </select>
+    </label>
+
+    <label class="oto-field" style="margin-top:10px;" *ngIf="scheduleReportId === newReportValue">Name
+      <input type="text" [(ngModel)]="scheduleNewName" placeholder="Their name" />
+    </label>
+
+    <label class="oto-field" style="margin-top:10px;">Attendee email (optional)
+      <input type="email" [(ngModel)]="scheduleEmail" placeholder="name@realpage.com" />
+    </label>
+
+    <div class="oto-schedule-row" style="margin-top:10px;">
+      <label class="oto-field">Date &amp; time
+        <input type="datetime-local" [(ngModel)]="scheduleAt" />
+      </label>
+      <label class="oto-field">Duration
+        <select [(ngModel)]="scheduleDuration">
+          <option [ngValue]="15">15 min</option>
+          <option [ngValue]="30">30 min</option>
+          <option [ngValue]="60">60 min</option>
+        </select>
+      </label>
+    </div>
+    <p class="oto-hint">Creates the meeting here and downloads a calendar file — open it to add the event to your own Outlook. Nothing is sent automatically.</p>
+
+    <div style="margin-top:14px; display:flex; gap:8px;">
+      <button type="button" class="oto-save-btn" [disabled]="!scheduleAt" (click)="submitSchedule()">Schedule &amp; download .ics</button>
+      <button type="button" class="pb-back" (click)="closeScheduleModal()">Cancel</button>
+    </div>
+  </div>
+</div>

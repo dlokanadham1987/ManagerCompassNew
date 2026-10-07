@@ -1,0 +1,80 @@
+<section class="view" *ngIf="snapshot as s">
+  <div class="kpi-head">
+    <h2>People snapshot &mdash; {{ s.scopeLabel }}</h2>
+    <span class="sub">Data as of {{ loadedAtLabel(s.loadedAtUtc) }}</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi" *ngFor="let k of s.kpis" [style.--tc]="k.color">
+      <div class="label">{{ k.label }}</div>
+      <div class="value">{{ k.value }}</div>
+      <div class="sub2">{{ k.subText }}</div>
+    </div>
+  </div>
+
+  <div class="snap-grid">
+    <div class="panel">
+      <h3>Headcount by hierarchy level</h3>
+      <div class="sub3">Real count &middot; active_fte.xlsx, single-column distribution</div>
+      <div class="bars">
+        <div class="bar" *ngFor="let v of s.levelCounts; let i = index">
+          <div class="val">{{ v | number }}</div>
+          <div class="fill" [style.height.%]="barHeightPct(v, s.levelCounts)"></div>
+          <div class="lbl">{{ s.levelLabels[i] }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Top exit reasons</h3>
+      <div class="sub3">Real &middot; % of 1,329 sample exits &middot; exits.xlsx</div>
+      <div class="reason-row" *ngFor="let r of s.attritionByReason">
+        <span class="rlabel">{{ r.label }}</span>
+        <div class="reason-track"><div class="reason-fill" [style.width.%]="r.percent * 3" [style.background]="r.color"></div></div>
+        <span class="rval">{{ r.percent }}%</span>
+      </div>
+
+      <div class="panel-subsection" *ngIf="s.attritionByType?.length">
+        <div class="section-label">Regrettable vs. non-regrettable</div>
+        <div class="reason-row" *ngFor="let r of s.attritionByType">
+          <span class="rlabel">{{ r.label }}</span>
+          <div class="reason-track"><div class="reason-fill" [style.width.%]="r.percent * 1.8" [style.background]="r.color"></div></div>
+          <span class="rval">{{ r.percent }}%</span>
+        </div>
+      </div>
+
+      <p class="wide-note" *ngIf="s.earlyTenureExitPct">{{ s.earlyTenureExitPct }}% of exits happened within an employee's first year.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Headcount by region</h3>
+      <div class="sub3">Real &middot; % of {{ s.kpis[0].value }} active headcount &middot; active_fte.xlsx</div>
+      <div class="reason-row" *ngFor="let r of s.headcountByRegion">
+        <span class="rlabel">{{ r.label }}</span>
+        <div class="reason-track"><div class="reason-fill" [style.width.%]="r.percent * 2" [style.background]="r.color"></div></div>
+        <span class="rval">{{ r.percent }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <h3>Requisition status</h3>
+    <div class="sub3">Real &middot; {{ totalReqCount(s.requisitionStatus) }} requisitions in sample export &middot; requisitions.xlsx</div>
+    <div class="reason-row" *ngFor="let row of s.requisitionStatus">
+      <span class="rlabel">{{ row.status }}</span>
+      <div class="reason-track"><div class="reason-fill" [style.width.%]="(row.count / maxReqCount(s.requisitionStatus)) * 100" [style.background]="row.color"></div></div>
+      <span class="rval">{{ row.count }}</span>
+    </div>
+
+    <div class="panel" style="margin-top:16px; background:var(--surface-2); box-shadow:none;">
+      <h3>Engagement trend</h3>
+      <div class="sub3">Illustrative only &middot; not present in the sample dataset</div>
+      <svg viewBox="0 0 98 30" width="220" height="60" preserveAspectRatio="xMinYMid meet" aria-hidden="true">
+        <polyline [attr.points]="'4,4 34,16 64,24 94,12'" fill="none" stroke="#137673" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+        <circle cx="94" cy="12" r="3.2" fill="#E8613C" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <p class="wide-note">{{ s.sourceNote }}</p>
+  </div>
+</section>

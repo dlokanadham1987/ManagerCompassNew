@@ -1,0 +1,74 @@
+<section class="view" *ngIf="card as c">
+  <div class="lc-toolbar">
+    <div class="panel-head" style="margin:0;">Leadership-ready people update</div>
+    <button type="button" class="lc-print-btn" (click)="print()">Print / export</button>
+  </div>
+
+  <article class="lcard">
+    <div class="lc-head">
+      <div class="lc-head-main">
+        <div class="lc-avatar" [style.--pc]="c.pulseColor">{{ initials(c.teamName) }}</div>
+        <div class="lc-head-titles">
+          <h3>{{ c.teamName }}</h3>
+          <div class="meta-chips">
+            <span class="meta-chip">Manager: {{ c.manager }}</span>
+            <span class="meta-chip">Reviewed with: {{ c.reviewedWith }}</span>
+            <span class="meta-chip">{{ c.period }}</span>
+          </div>
+        </div>
+        <div class="pulse-badge" [style.--pc]="c.pulseColor" [title]="c.pulseNote">
+          <span class="pulse-dot"></span>
+          <span class="pulse-label">{{ c.pulseLabel }}</span>
+        </div>
+      </div>
+      <div class="pulse-note">{{ c.pulseNote }}</div>
+    </div>
+
+    <div class="lc-stats">
+      <div class="lc-stat" *ngFor="let s of c.stats">
+        <div class="v">{{ s.value }}</div>
+        <div class="k">{{ s.label }}</div>
+      </div>
+    </div>
+
+    <div class="lc-body">
+      <div class="lc-section">
+        <h4>Risks flagged</h4>
+        <ul class="lc-list">
+          <li *ngFor="let item of c.risksFlagged">
+            <span class="lc-item-dot" [style.--dc]="item.color"></span>
+            <div class="lc-item-text">
+              {{ item.text }}
+              <span class="lc-item-src" *ngIf="item.source">Source: {{ item.source }}</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lc-section">
+        <h4>Actions taken this period</h4>
+        <ul class="lc-list">
+          <li *ngFor="let item of c.actionsTaken">
+            <span class="lc-item-dot" [style.--dc]="item.color"></span>
+            <div class="lc-item-text">{{ item.text }}</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lc-section">
+        <h4>Next 30 days &amp; follow-up</h4>
+        <ul class="lc-list">
+          <li *ngFor="let item of c.nextSteps">
+            <span class="lc-item-dot" [style.--dc]="item.color"></span>
+            <div class="lc-item-text">{{ item.text }}</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lc-footer-note">
+        <span>{{ c.evidenceNote }}</span>
+        <span>{{ c.humanReviewNote }}</span>
+      </div>
+    </div>
+  </article>
+</section>

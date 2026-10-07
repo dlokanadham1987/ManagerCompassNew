@@ -1,0 +1,160 @@
+<section class="view" *ngIf="metrics as m">
+  <div class="kpi-head">
+    <h2>Adoption &amp; impact</h2>
+  </div>
+
+  <div class="kpi-grid">
+    <button type="button" class="kpi kpi-clickable" style="--tc:#137673" [class.active]="expandedKpi==='activeManagers'" (click)="toggleKpi('activeManagers')" [attr.aria-expanded]="expandedKpi==='activeManagers'">
+      <div class="label">Active managers</div>
+      <div class="value">{{ m.activeManagers }} / {{ m.eligibleManagers }}</div>
+      <div class="sub2">{{ adoptionPct(m) }}% of eligible team this week</div>
+      <span class="kpi-expand-hint">{{ expandedKpi==='activeManagers' ? 'Hide detail ⌃' : 'See detail ⌄' }}</span>
+    </button>
+    <button type="button" class="kpi kpi-clickable" style="--tc:#2E8C9C" [class.active]="expandedKpi==='questions'" (click)="toggleKpi('questions')">
+      <div class="label">Questions answered</div>
+      <div class="value">{{ m.questionsAnsweredThisWeek }}</div>
+      <div class="sub2">this week</div>
+      <span class="kpi-expand-hint">{{ expandedKpi==='questions' ? 'Hide detail ⌃' : 'See detail ⌄' }}</span>
+    </button>
+    <button type="button" class="kpi kpi-clickable" style="--tc:#6E8C52" [class.active]="expandedKpi==='checklist'" (click)="toggleKpi('checklist')">
+      <div class="label">Checklist completion</div>
+      <div class="value">{{ (m.checklistCompletionRate * 100) | number:'1.0-0' }}%</div>
+      <div class="sub2">of suggested next steps ticked off</div>
+      <span class="kpi-expand-hint">{{ expandedKpi==='checklist' ? 'Hide detail ⌃' : 'See detail ⌄' }}</span>
+    </button>
+    <button type="button" class="kpi kpi-clickable" style="--tc:#E4693F" [class.active]="expandedKpi==='escalations'" (click)="toggleKpi('escalations')">
+      <div class="label">Escalations routed</div>
+      <div class="value">{{ m.escalationsRoutedThisWeek }}</div>
+      <div class="sub2">handed to HR, not answered by the assistant</div>
+      <span class="kpi-expand-hint">{{ expandedKpi==='escalations' ? 'Hide detail ⌃' : 'See detail ⌄' }}</span>
+    </button>
+    <button type="button" class="kpi kpi-clickable" style="--tc:#7C5C99" [class.active]="expandedKpi==='medianTime'" (click)="toggleKpi('medianTime')">
+      <div class="label">Median time</div>
+      <div class="value">{{ m.medianSecondsPerQuestion }}s</div>
+      <div class="sub2">per question, ask to answer</div>
+      <span class="kpi-expand-hint">{{ expandedKpi==='medianTime' ? 'Hide detail ⌃' : 'See detail ⌄' }}</span>
+    </button>
+  </div>
+
+  <div class="panel kpi-detail" *ngIf="expandedKpi" [style.--tc]="'#8A9096'">
+    <ng-container [ngSwitch]="expandedKpi">
+      <ng-container *ngSwitchCase="'activeManagers'">
+        <h4>Active managers &mdash; last 4 weeks</h4>
+        <div class="sub3">Same weekly trend as below, opened here for a quick look</div>
+        <div class="bars">
+          <div class="bar" *ngFor="let v of m.weeklyActiveTrend; let i = index">
+            <div class="val">{{ v }}</div>
+            <div class="fill" [style.height.%]="barHeightPct(v, m.weeklyActiveTrend)"></div>
+            <div class="lbl">Wk {{ i + 1 }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'questions'">
+        <h4>Questions by topic, this week</h4>
+        <div class="sub3">All topics with at least one question &mdash; synthetic sample</div>
+        <div class="reason-row" *ngFor="let t of topicsByCount(m)">
+          <span class="rlabel"><app-topic-icon [kind]="t.key" [size]="14" [color]="t.color"></app-topic-icon>{{ t.label }}</span>
+          <div class="reason-track"><div class="reason-fill" [style.width.%]="(t.count / topicsByCount(m)[0].count) * 100" [style.background]="t.color"></div></div>
+          <span class="rval">{{ t.count }}</span>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'checklist'">
+        <h4>Checklist completion by topic</h4>
+        <div class="sub3">Of topics asked about this week &mdash; synthetic sample</div>
+        <div class="reason-row" *ngFor="let t of topicsByChecklist(m)">
+          <span class="rlabel"><app-topic-icon [kind]="t.key" [size]="14" [color]="t.color"></app-topic-icon>{{ t.label }}</span>
+          <div class="reason-track"><div class="reason-fill" [style.width.%]="t.checklistCompletionRatePct" [style.background]="t.color"></div></div>
+          <span class="rval">{{ t.checklistCompletionRatePct }}%</span>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'escalations'">
+        <h4>Escalation rate by topic</h4>
+        <div class="sub3">Share of that topic's questions handed to HR &mdash; synthetic sample</div>
+        <div class="reason-row" *ngFor="let t of topicsByEscalation(m)">
+          <span class="rlabel"><app-topic-icon [kind]="t.key" [size]="14" [color]="t.color"></app-topic-icon>{{ t.label }}</span>
+          <div class="reason-track"><div class="reason-fill" [style.width.%]="(t.escalationRatePct || 0) * 2.5" [style.background]="t.color"></div></div>
+          <span class="rval">{{ t.escalationRatePct }}%</span>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'medianTime'">
+        <h4>Median time by topic, fastest first</h4>
+        <div class="sub3">Ask to answer &mdash; synthetic sample</div>
+        <div class="reason-row" *ngFor="let t of topicsByMedian(m)">
+          <span class="rlabel"><app-topic-icon [kind]="t.key" [size]="14" [color]="t.color"></app-topic-icon>{{ t.label }}</span>
+          <div class="reason-track"><div class="reason-fill" [style.width.%]="(t.medianSeconds || 0) / topicsByMedian(m)[topicsByMedian(m).length-1].medianSeconds! * 100" [style.background]="t.color"></div></div>
+          <span class="rval">{{ t.medianSeconds }}s</span>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+
+  <div class="snap-grid">
+    <div class="panel">
+      <h3>Weekly active managers</h3>
+      <div class="sub3">Last 4 weeks &middot; synthetic sample</div>
+      <div class="bars">
+        <div class="bar" *ngFor="let v of m.weeklyActiveTrend; let i = index">
+          <div class="val">{{ v }}</div>
+          <div class="fill" [style.height.%]="barHeightPct(v, m.weeklyActiveTrend)"></div>
+          <div class="lbl">Wk {{ i + 1 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Most-asked topics</h3>
+      <div class="sub3">This week &middot; synthetic sample</div>
+      <div class="reason-row" *ngFor="let t of m.topTopics">
+        <span class="rlabel" style="display:flex; align-items:center; gap:6px; width:170px;">
+          <app-topic-icon [kind]="t.key" [size]="14" [color]="t.color"></app-topic-icon>
+          {{ t.label }}
+        </span>
+        <div class="reason-track"><div class="reason-fill" [style.width.%]="(t.count / maxCount(m)) * 100" [style.background]="t.color"></div></div>
+        <span class="rval">{{ t.count }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <h3>Full topic breakdown</h3>
+    <div class="sub3">All 9 guidance topics, not just the top 5 &middot; synthetic sample</div>
+    <div class="adoption-table-wrap">
+      <table class="adoption-table">
+        <thead>
+          <tr>
+            <th>Topic</th>
+            <th>Questions</th>
+            <th>Escalation rate</th>
+            <th>Checklist completion</th>
+            <th>Median time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of m.topicBreakdown" [class.zero-row]="t.count === 0">
+            <td><span class="rlabel"><app-topic-icon [kind]="t.key" [size]="14" [color]="t.color"></app-topic-icon>{{ t.label }}</span></td>
+            <td>{{ t.count }}</td>
+            <td>{{ t.escalationRatePct !== null ? (t.escalationRatePct + '%') : '—' }}</td>
+            <td>{{ t.checklistCompletionRatePct !== null ? (t.checklistCompletionRatePct + '%') : '—' }}</td>
+            <td>{{ t.medianSeconds !== null ? (t.medianSeconds + 's') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <h3>How this gets measured in production</h3>
+    <div class="sub3">Not just claimed &mdash; here's the actual plan</div>
+    <ul class="checklist">
+      <li *ngFor="let step of m.productionMeasurementPlan">
+        <span style="width:15px; height:15px; border-radius:50%; background:var(--accent-tint); border:1.5px solid var(--rp-teal); flex:none; margin-top:3px;"></span>
+        <label>{{ step }}</label>
+      </li>
+    </ul>
+    <p class="wide-note">This view is the seam for real telemetry: swap the mock counts for actual event logs once the assistant is wired to a real usage-tracking pipeline.</p>
+  </div>
+</section>

@@ -1,0 +1,65 @@
+<section class="view">
+  <div class="kpi-head">
+    <h2>Data explorer</h2>
+  </div>
+
+  <label class="explorer-field" style="margin:16px 0;">
+    <span class="panel-head" style="margin-bottom:6px;">Dataset</span>
+    <select [ngModel]="selectedDataset" (ngModelChange)="onDatasetChange($event)">
+      <option *ngFor="let d of datasets" [value]="d.key">{{ d.label }} ({{ d.rowCount | number }} rows)</option>
+    </select>
+  </label>
+
+  <div class="portal-card">
+    <div class="portal-titlebar">
+      <h3>{{ gridTitle }}</h3>
+      <span class="portal-count" *ngIf="idGrid">{{ idGrid.totalRows | number }} record{{ idGrid.totalRows === 1 ? '' : 's' }}</span>
+      <button type="button" class="portal-clear" *ngIf="hasActiveFilters" (click)="clearFilters()">Clear filters</button>
+    </div>
+    <p class="sub3" style="padding:0 16px; margin-top:10px;">These columns are the <strong>same synthetic ID</strong> repeated a few ways &mdash; they were not independently shuffled, so combining and filtering them together is accurate, not fabricated.</p>
+
+    <div class="empty" *ngIf="idError">{{ idError }}</div>
+
+    <ng-container *ngIf="!idError && idGrid as g">
+      <div class="portal-table-wrap">
+        <table class="portal-table">
+          <thead>
+            <tr class="portal-header-row">
+              <th class="portal-row-col">#</th>
+              <th *ngFor="let c of g.columns">{{ c }}</th>
+            </tr>
+            <tr class="portal-filter-row">
+              <th class="portal-row-col"></th>
+              <th *ngFor="let c of g.columns">
+                <input
+                  type="text"
+                  [placeholder]="c"
+                  [ngModel]="columnFilters[c] || ''"
+                  (ngModelChange)="onColumnFilterChange(c, $event)" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of g.rows; let i = index">
+              <td class="row-index">{{ idRowIndex(i) }}</td>
+              <td *ngFor="let v of row">{{ v }}</td>
+            </tr>
+            <tr *ngIf="!g.rows.length">
+              <td [attr.colspan]="g.columns.length + 1" class="portal-no-rows">No records match these filters.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button type="button" (click)="goToIdPage(1)" [disabled]="idPage === 1">&laquo; First</button>
+        <button type="button" (click)="goToIdPage(idPage - 1)" [disabled]="idPage === 1">&lsaquo; Prev</button>
+        <span class="page-indicator">Page {{ idPage }} of {{ g.totalPages | number }} &middot; {{ g.totalRows | number }} rows</span>
+        <button type="button" (click)="goToIdPage(idPage + 1)" [disabled]="idPage === g.totalPages">Next &rsaquo;</button>
+        <button type="button" (click)="goToIdPage(g.totalPages)" [disabled]="idPage === g.totalPages">Last &raquo;</button>
+      </div>
+    </ng-container>
+
+    <div class="empty" *ngIf="idLoading">Loading&hellip;</div>
+  </div>
+</section>

@@ -1,0 +1,45 @@
+<div class="rp-topbar">
+  <div class="rp-topbar-inner">
+    <div class="rp-logo">
+      <svg class="rp-accent-mark" width="14" height="18" viewBox="0 0 14 18" aria-hidden="true">
+        <path d="M1 18V7a6 6 0 0 1 12 0v11z" fill="var(--rp-coral)"/>
+      </svg>
+      <span class="rp-wordmark">Realpage.</span>
+    </div>
+    <div class="rp-divider"></div>
+    <span class="rp-app-name">MANAGER COMPASS</span>
+    <div class="rp-topbar-right">
+      <div class="rp-user" title="Signed in as {{ managerName }}">
+        <span class="rp-user-avatar">{{ managerInitials }}</span>
+        <span class="rp-user-name">{{ managerName }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="rp-navbar">
+  <div class="rp-navbar-inner">
+    <a routerLink="/assistant" routerLinkActive="active">Assistant</a>
+    <a routerLink="/snapshot" routerLinkActive="active">People Snapshot</a>
+    <a routerLink="/playbooks" routerLinkActive="active">Playbooks</a>
+    <a routerLink="/one-on-ones" routerLinkActive="active">1:1s</a>
+    <a routerLink="/escalation" routerLinkActive="active">
+      Escalation Directory
+      <span class="nav-badge-count" *ngIf="escalationsThisWeek" [title]="escalationsThisWeek + ' escalated to HR this week'">{{ escalationsThisWeek }}</span>
+    </a>
+    <a routerLink="/leadership" routerLinkActive="active">
+      Leadership Update
+      <span class="nav-badge-dot" *ngIf="leadershipPulseColor" [style.background]="leadershipPulseColor" [title]="leadershipPulseLabel"></span>
+    </a>
+    <a routerLink="/adoption" routerLinkActive="active">Adoption &amp; Impact</a>
+    <a routerLink="/explorer" routerLinkActive="active">Data Explorer</a>
+  </div>
+</nav>
+
+<div class="shell shell-pad">
+  <router-outlet></router-outlet>
+
+  <footer class="strip">
+    <span>Team: <b>MC-07</b></span>
+  </footer>
+</div>

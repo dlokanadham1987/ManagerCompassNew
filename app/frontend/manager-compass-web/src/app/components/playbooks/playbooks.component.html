@@ -1,0 +1,64 @@
+<section class="view">
+  <div class="kpi-head">
+    <h2>Playbooks &mdash; the full manager library</h2>
+  </div>
+
+  <ng-container *ngIf="!selected">
+    <ng-container *ngFor="let group of topicGroups">
+      <div class="panel-head pb-group-header">{{ group.label }}</div>
+      <div class="playbook-grid">
+        <button
+          type="button"
+          class="playbook-card"
+          *ngFor="let t of group.topics"
+          [style.--tc]="t.color"
+          (click)="select(t)">
+          <div class="pc-icon"><app-topic-icon [kind]="t.key" [size]="20" [color]="t.color"></app-topic-icon></div>
+          <div class="pc-label">{{ t.label }}</div>
+          <div class="pc-blurb">{{ t.blurb }}</div>
+          <div class="pc-progress" *ngIf="t.checklist.length">
+            <div class="pc-progress-track"><div class="pc-progress-fill" [style.width.%]="progressPct(t)" [style.background]="t.color"></div></div>
+            <span>{{ doneCount(t) }} / {{ t.checklist.length }}</span>
+          </div>
+        </button>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="selected as t">
+    <button type="button" class="pb-back" (click)="backToLibrary()">&laquo; All playbooks</button>
+
+    <div class="playbook-main">
+      <div class="playbook-detail" [style.--tc]="t.color">
+        <div class="card" [style.--tc]="t.color">
+          <div class="card-flag" [style.color]="t.color"><app-topic-icon [kind]="t.key" [size]="17" [color]="t.color"></app-topic-icon><span>{{ t.label }}</span></div>
+          <p class="answer">{{ t.answer }}</p>
+
+          <div class="section-label">Grounded in</div>
+          <div class="sources">
+            <span class="source" *ngFor="let s of t.sources" title="Real RealPage HR document — link to the current version on the RealPage Global Portal / SharePoint once confirmed">{{ s }}</span>
+          </div>
+
+          <div class="section-label checklist-label-row">
+            <span>Your progress on this playbook</span>
+            <span class="progress-count">{{ doneCount(t) }} / {{ t.checklist.length }}</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" [style.width.%]="progressPct(t)" [style.background]="t.color"></div></div>
+          <ul class="checklist">
+            <li *ngFor="let item of t.checklist; let i = index">
+              <input type="checkbox" [id]="'pb-' + t.key + '-' + i" [checked]="isChecked(t.key, i)" (change)="toggle(t.key, i)" />
+              <label [for]="'pb-' + t.key + '-' + i">{{ item }}</label>
+            </li>
+          </ul>
+
+          <div class="escalation">
+            <span class="mark">Escalation</span>
+            <span>{{ t.escalation }}</span>
+          </div>
+
+          <div class="meta">Saved locally on this device — your checklist progress here persists across visits, separate from any one-off question you ask in the Assistant tab.</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</section>
