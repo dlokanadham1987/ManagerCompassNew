@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -30,6 +30,72 @@ interface PromptChip {
   key: string;
 }
 
+interface QuickRef {
+  key: string;
+  label: string;
+  summary: string;
+  points: string[];
+  url: string;
+}
+
+const QUICK_REFS: QuickRef[] = [
+  {
+    key: 'launch',
+    label: 'RealPage Launch',
+    summary: 'The RealPage launch portal: a single starting point to reach company applications and resources.',
+    points: [
+      'Use it as your jumping-off page to find internal tools and sites',
+      'Bookmark it for quick access to the systems you use most',
+      'If a tool you expect is missing, ask your HRBP or IT'
+    ],
+    url: 'https://launch.realpage.com/'
+  },
+  {
+    key: 'learning',
+    label: 'RealPage Learning',
+    summary: 'The learning platform for training courses and development for you and your team.',
+    points: [
+      'Find and assign required or recommended courses for your team',
+      'Encourage direct reports to complete assigned learning on time',
+      'Use it alongside development goals set in performance conversations'
+    ],
+    url: 'https://www.realpagelearning.com/v5/login/65/'
+  },
+  {
+    key: 'dayforce',
+    label: 'Dayforce (HCM)',
+    summary: 'The HR, time and payroll system, signed in through RealPage single sign-on.',
+    points: [
+      'Review and approve your team\'s time and time-off requests',
+      'Look up team information and personal details in HCM',
+      'Payroll or pay questions about an individual go to HR, not through this assistant'
+    ],
+    url: 'https://sso.dayforcehcm.com/realpage'
+  },
+  {
+    key: 'concur',
+    label: 'Concur (Travel & Expense)',
+    summary: 'Used to book business travel and to submit and approve expense reports.',
+    points: [
+      'Submit expense reports with receipts promptly after a trip or purchase',
+      'Approve your direct reports\' expense reports as the approving manager',
+      'Check the travel and expense policy before booking'
+    ],
+    url: 'https://www.concursolutions.com/'
+  },
+  {
+    key: 'mediassist',
+    label: 'Medi Assist (Health Benefits, India)',
+    summary: 'The Medi Assist portal for health insurance: e-cards, claims and network hospitals.',
+    points: [
+      'Employees use it to download health e-cards and track claims',
+      'Point team members here for health insurance claim questions',
+      'Plan details and eligibility questions go to HR / the Benefits Summary'
+    ],
+    url: 'https://portal.mediassist.in/Home.aspx'
+  }
+];
+
 const STARTER_KEYS = ['engagement', 'compensation', 'retention', 'recruiting', 'onboarding'];
 
 const GROUP_ORDER = ['Hiring', 'People & Performance', 'Pay & Policy'];
@@ -58,6 +124,9 @@ export class AssistantComponent implements OnInit {
   activeKey: string | null = null;
   activeTopic: Topic | null = null;
   inputText = '';
+  quickRefs = QUICK_REFS;
+  quickRefOpen = false;
+  activeRef: QuickRef | null = null;
   private snapshot: Snapshot | null = null;
 
   constructor(private api: ApiService) {}
@@ -77,7 +146,19 @@ export class AssistantComponent implements OnInit {
     return this.starterTopics.map(t => ({ text: t.prompt, color: t.color, key: t.key }));
   }
 
+  toggleQuickRef(): void {
+    this.quickRefOpen = !this.quickRefOpen;
+  }
+
+  openQuickRef(ref: QuickRef): void {
+    this.activeRef = ref;
+    this.activeKey = null;
+    this.activeTopic = null;
+    this.current = null;
+  }
+
   askPromptChip(chip: PromptChip): void {
+    this.activeRef = null;
     this.activeKey = chip.key;
     this.submitAsk(chip.text, chip.key);
   }
@@ -98,7 +179,7 @@ export class AssistantComponent implements OnInit {
   }
 
   // Only topics with a genuinely real, already-validated aggregate in the People Snapshot get a
-  // live stat here — e.g. Engagement has no source column in the sample dataset, so it's
+  // live stat here â€” e.g. Engagement has no source column in the sample dataset, so it's
   // deliberately left out rather than showing a fabricated number.
   liveStat(topicKey: string): LiveStat | null {
     const s = this.snapshot;
@@ -107,7 +188,7 @@ export class AssistantComponent implements OnInit {
     switch (topicKey) {
       case 'recruiting':
         return {
-          value: s.requisitionStatus.map(r => `${r.count} ${r.status.toLowerCase()}`).join(' · ')
+          value: s.requisitionStatus.map(r => `${r.count} ${r.status.toLowerCase()}`).join(' Â· ')
         };
       case 'retention': {
         const exits = s.kpis.find(k => k.label.startsWith('Exits'));
@@ -115,7 +196,7 @@ export class AssistantComponent implements OnInit {
         if (!exits) return null;
         return {
           value: `${exits.value} exits sampled (${exits.subText})`,
-          sub: topReason ? `Top reason: ${topReason.label} — ${topReason.percent}%` : undefined
+          sub: topReason ? `Top reason: ${topReason.label} â€” ${topReason.percent}%` : undefined
         };
       }
       case 'teamhealth': {
@@ -129,6 +210,7 @@ export class AssistantComponent implements OnInit {
   }
 
   askTopic(topic: Topic): void {
+    this.activeRef = null;
     this.activeKey = topic.key;
     this.submitAsk(topic.prompt, topic.key);
   }
@@ -136,13 +218,14 @@ export class AssistantComponent implements OnInit {
   onSubmit(): void {
     const text = this.inputText.trim();
     if (!text) return;
+    this.activeRef = null;
     this.activeKey = null;
     this.inputText = '';
     this.submitAsk(text);
   }
 
   private submitAsk(text: string, topicKey?: string): void {
-    // Replaces whatever is currently shown — selecting a new topic or asking a new
+    // Replaces whatever is currently shown â€” selecting a new topic or asking a new
     // question always swaps the middle panel's content rather than stacking a history.
     const entry: CurrentAnswer = { question: text, response: null, loading: true };
     this.current = entry;

@@ -35,6 +35,10 @@ Real sponsor data lives at the path configured in `appsettings.json` → `Sample
 
 Assistant/Playbooks guidance content is grounded in real HR documents from the same OneDrive folder, cited by real filename.
 
+## Assistant side nav: Quick Reference
+
+The Assistant tab's side nav has a collapsible "Quick Reference" group (`assistant.component.ts` → `QUICK_REFS`, frontend-only, no API). Clicking a link shows its summary, key points and external URL in the main panel. To add or change an entry, edit `QUICK_REFS`.
+
 ## Status
 
 See `00_Admin/STATUS.md` for what's built, what's in progress, and current blockers (as of the last update: SharePoint upload of this whole folder into the team's Teams-connected SharePoint is the single biggest remaining blocker to a valid submission).

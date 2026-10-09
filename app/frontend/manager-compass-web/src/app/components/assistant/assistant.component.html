@@ -22,6 +22,25 @@
           <span>{{ t.label }}</span>
         </button>
       </ng-container>
+
+      <button
+        type="button"
+        class="side-nav-group-header side-nav-toggle"
+        [attr.aria-expanded]="quickRefOpen"
+        (click)="toggleQuickRef()">
+        <span>Quick Reference</span>
+        <span aria-hidden="true">{{ quickRefOpen ? '▾' : '▸' }}</span>
+      </button>
+      <ng-container *ngIf="quickRefOpen">
+        <button
+          *ngFor="let r of quickRefs"
+          type="button"
+          class="side-nav-link"
+          [class.active]="activeRef?.key === r.key"
+          (click)="openQuickRef(r)">
+          <span>{{ r.label }}</span>
+        </button>
+      </ng-container>
     </nav>
 
     <main class="convo">
@@ -50,7 +69,25 @@
       </div>
 
       <div class="feed" role="log" aria-live="polite">
-        <div class="empty" *ngIf="!current">
+        <div class="card" *ngIf="activeRef as r">
+          <div class="card-flag"><span>Quick Reference</span></div>
+          <div class="tile-title">{{ r.label }}</div>
+          <p class="answer">{{ r.summary }}</p>
+
+          <div class="section-label">Key points</div>
+          <ul class="bullet-list">
+            <li *ngFor="let p of r.points">{{ p }}</li>
+          </ul>
+
+          <div class="section-label">Link</div>
+          <div class="sources">
+            <a class="source" [href]="r.url" target="_blank" rel="noopener">{{ r.url }}</a>
+          </div>
+
+          <div class="meta">Opens in a new tab. Sign-in is handled by the destination site.</div>
+        </div>
+
+        <div class="empty" *ngIf="!current && !activeRef">
           <strong>Ask a question or pick a topic.</strong>
           Try &ldquo;our engagement score dropped&rdquo;, &ldquo;how do I open a requisition&rdquo;, or &ldquo;what are my first 90 days&rdquo;. This assistant sticks to approved guidance and team-level signals &mdash; it will hand off anything that needs a human call.
         </div>
