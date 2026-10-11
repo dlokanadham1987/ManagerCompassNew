@@ -59,16 +59,15 @@
           <li *ngFor="let text of m.preNotes">{{ text }}</li>
         </ul>
 
-        <ng-container *ngIf="!m.aiSummary">
-          <button type="button" class="oto-ai-btn" [disabled]="aiSummaryLoadingId === m.id" (click)="generateAiSummary(m)">
-            <span *ngIf="aiSummaryLoadingId !== m.id">&#10024; Generate AI summary of last 2 weeks</span>
-            <span *ngIf="aiSummaryLoadingId === m.id">Summarizing&hellip;</span>
-          </button>
-        </ng-container>
-        <div class="oto-ai-summary" *ngIf="m.aiSummary">
-          <span class="oto-ai-label">AI summary (illustrative)</span>
-          {{ m.aiSummary }}
-        </div>
+        <app-ai-summary
+          [idPrefix]="'ai-' + m.id"
+          [summary]="m.aiSummary"
+          [period]="m.aiSummaryPeriod ?? null"
+          [loading]="aiSummaryLoadingId === m.id"
+          [error]="aiSummaryError?.id === m.id ? aiSummaryError?.message ?? null : null"
+          hint="The notes in the selected date range (and your Team Notes for this person) are sent to an AI model to write the summary."
+          (generate)="generateAiSummary(m, $event)">
+        </app-ai-summary>
       </div>
     </details>
 

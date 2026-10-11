@@ -3,6 +3,7 @@ import { AssistantComponent } from './components/assistant/assistant.component';
 import { PeopleSnapshotComponent } from './components/people-snapshot/people-snapshot.component';
 import { PlaybooksComponent } from './components/playbooks/playbooks.component';
 import { OneOnOneComponent } from './components/one-on-one/one-on-one.component';
+import { TeamNotesComponent } from './components/team-notes/team-notes.component';
 import { EscalationComponent } from './components/escalation/escalation.component';
 import { LeadershipComponent } from './components/leadership/leadership.component';
 import { AdoptionComponent } from './components/adoption/adoption.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'snapshot', component: PeopleSnapshotComponent },
   { path: 'playbooks', component: PlaybooksComponent },
   { path: 'one-on-ones', component: OneOnOneComponent },
+  { path: 'team-notes', component: TeamNotesComponent },
   { path: 'escalation', component: EscalationComponent },
   { path: 'leadership', component: LeadershipComponent },
   { path: 'adoption', component: AdoptionComponent },

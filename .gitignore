@@ -1,2 +1,5 @@
 # Sponsor/reference material — not part of the app, kept local only
 references/
+
+# Local secrets (API keys)
+.env

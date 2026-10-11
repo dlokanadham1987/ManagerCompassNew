@@ -1,15 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ApiService } from '../../services/api.service';
+import { AiSummaryComponent, DateRange } from '../../shared/ai-summary/ai-summary.component';
 import { DirectReport, PostNote, ScheduledMeeting } from '../../models/one-on-one.model';
 
 const STORAGE_KEY = 'mc-one-on-ones-v2';
+const SAMPLE_NOTES_FLAG = 'mc-one-on-ones-sample-notes-v1';
 const NEW_REPORT_VALUE = '__new__';
 
 @Component({
   selector: 'app-one-on-one',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AiSummaryComponent],
   templateUrl: './one-on-one.component.html'
 })
 export class OneOnOneComponent implements OnInit {
@@ -25,6 +29,9 @@ export class OneOnOneComponent implements OnInit {
   readonly newReportValue = NEW_REPORT_VALUE;
 
   aiSummaryLoadingId: string | null = null;
+  aiSummaryError: { id: string; message: string } | null = null;
+
+  constructor(private api: ApiService) {}
 
   postNotesOpenId: string | null = null;
   draftPostNoteText = '';
@@ -36,7 +43,60 @@ export class OneOnOneComponent implements OnInit {
     const state = this.load();
     this.reports = state.reports;
     this.meetings = state.meetings;
+    this.addSampleNotesOnce();
     this.save();
+  }
+
+  // One-time sample history (2 dated post notes per seeded person, within the last 2 weeks) so the AI summary
+  // has something to read. Additive — it never touches meetings/notes already saved in this browser.
+  private addSampleNotesOnce(): void {
+    try {
+      if (localStorage.getItem(SAMPLE_NOTES_FLAG)) return;
+      localStorage.setItem(SAMPLE_NOTES_FLAG, '1');
+    } catch {
+      return;
+    }
+
+    const samples: Record<string, { daysAgo: number; note: string; action: string; done: boolean }[]> = {
+      Saritha: [
+        { daysAgo: 9, note: 'Reviewed current project workload. Comfortable with priorities but flagged the release testing timeline as tight.', action: 'Share the testing timeline concern with the team lead', done: true },
+        { daysAgo: 3, note: 'Talked about cross-team collaboration; discussed pairing with the platform team on the integration work.', action: 'Introduce Saritha to the platform team contact', done: false }
+      ],
+      Rishika: [
+        { daysAgo: 10, note: 'Walked through last sprint items. Two tasks carried over because the requirements were unclear.', action: 'Clarify requirements for the reporting task', done: true },
+        { daysAgo: 4, note: 'Interested in a stretch assignment on the dashboard work; wants more exposure to customer-facing demos.', action: 'Find a demo opportunity for next month', done: false }
+      ],
+      Srija: [
+        { daysAgo: 8, note: 'Celebrated the successful demo. Team morale is good, with some concern about meeting-heavy days.', action: 'Review recurring meetings to protect focus time', done: true },
+        { daysAgo: 2, note: 'Aligned on goals for the next sprint. She would like to mentor a new joiner.', action: 'Pair Srija with the new joiner', done: false }
+      ]
+    };
+
+    for (const [name, entries] of Object.entries(samples)) {
+      let report = this.reports.find(r => r.name === name);
+      if (!report) {
+        report = { id: this.makeId(), name, email: '' };
+        this.reports.push(report);
+      }
+      for (const e of entries) {
+        const when = new Date();
+        when.setDate(when.getDate() - e.daysAgo);
+        when.setHours(10, 0, 0, 0);
+        this.meetings.push({
+          id: this.makeId(),
+          reportId: report.id,
+          reportName: name,
+          startsAt: this.toLocalDateTimeInput(when),
+          durationMinutes: 30,
+          preNotes: [],
+          aiSummary: null,
+          postNotes: [{ id: this.makeId(), date: when.toISOString().slice(0, 10), text: e.note }],
+          actionItems: [{ text: e.action, done: e.done }],
+          nextFollowUpDate: null,
+          completed: true
+        });
+      }
+    }
   }
 
   upcomingMeetings(): ScheduledMeeting[] {
@@ -110,19 +170,37 @@ export class OneOnOneComponent implements OnInit {
     this.closeScheduleModal();
   }
 
-  // Mock only — no real activity source is wired up yet. Deliberately labeled illustrative in
-  // the UI so it never reads as real data the way the rest of this app's real numbers do.
-  generateAiSummary(m: ScheduledMeeting): void {
-    if (m.aiSummary || this.aiSummaryLoadingId === m.id) return;
+  // Sends this person's notes (all their meetings — the API applies the chosen date range by timestamp and adds
+  // Team Notes comments) to the backend, which asks the AI model for the summary. The API key never reaches the browser.
+  generateAiSummary(m: ScheduledMeeting, range: DateRange): void {
+    if (this.aiSummaryLoadingId === m.id) return;
     this.aiSummaryLoadingId = m.id;
-    setTimeout(() => {
-      m.aiSummary =
-        `Illustrative preview — not yet connected to a real activity feed. Once wired up, this will pull ` +
-        `${m.reportName}'s last 2 weeks of activity (goals, tickets, engagement signals) and summarize it into ` +
-        `2-3 talking points automatically. For now, use the pre notes below.`;
-      this.aiSummaryLoadingId = null;
-      this.save();
-    }, 900);
+    this.aiSummaryError = null;
+
+    const theirMeetings = this.meetings.filter(x => x.reportId === m.reportId);
+    this.api.summarizeOneOnOne({
+      reportName: m.reportName,
+      from: range.from,
+      to: range.to,
+      postNotes: theirMeetings.flatMap(x => x.postNotes.map(n => ({ date: n.date, text: n.text }))),
+      actionItems: theirMeetings.flatMap(x =>
+        x.actionItems.map(a => ({ text: a.text, done: a.done, meetingDate: x.startsAt })))
+    }).subscribe({
+      next: res => {
+        m.aiSummary = res.summary;
+        m.aiSummaryPeriod = `${res.periodStart} to ${res.periodEnd}`;
+        this.aiSummaryError = null;
+        this.aiSummaryLoadingId = null;
+        this.save();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.aiSummaryError = {
+          id: m.id,
+          message: typeof err.error === 'string' && err.error ? err.error : 'Could not generate the summary. Is the backend running?'
+        };
+        this.aiSummaryLoadingId = null;
+      }
+    });
   }
 
   // Opens the append panel for THIS meeting — any previously saved post notes stay visible
