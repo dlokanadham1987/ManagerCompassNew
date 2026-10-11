@@ -30,6 +30,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IGuidanceDataService, MockGuidanceDataService>();
 builder.Services.AddSingleton<IDataExplorerService, DataExplorerService>();
 builder.Services.AddSingleton<ITeamNotesService, TeamNotesService>();
+builder.Services.AddSingleton<IOneOnOneStore, OneOnOneStore>();
 
 // AI provider: Ai:Provider ("anthropic" | "openai") wins; otherwise Anthropic if its key is set, else OpenAI.
 var aiProvider = builder.Configuration["Ai:Provider"]?.ToLowerInvariant()

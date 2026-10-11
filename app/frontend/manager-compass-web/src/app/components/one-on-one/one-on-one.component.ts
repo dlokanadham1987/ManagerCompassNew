@@ -4,10 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 import { AiSummaryComponent, DateRange } from '../../shared/ai-summary/ai-summary.component';
-import { DirectReport, PostNote, ScheduledMeeting } from '../../models/one-on-one.model';
+import { DirectReport, OneOnOneState, PostNote, ScheduledMeeting } from '../../models/one-on-one.model';
 
 const STORAGE_KEY = 'mc-one-on-ones-v2';
-const SAMPLE_NOTES_FLAG = 'mc-one-on-ones-sample-notes-v1';
 const NEW_REPORT_VALUE = '__new__';
 
 @Component({
@@ -28,6 +27,9 @@ export class OneOnOneComponent implements OnInit {
   scheduleDuration = 30;
   readonly newReportValue = NEW_REPORT_VALUE;
 
+  offline = false; // true when the API couldn't be reached, so data is only kept in this browser
+  saveError: string | null = null;
+
   aiSummaryLoadingId: string | null = null;
   aiSummaryError: { id: string; message: string } | null = null;
 
@@ -39,24 +41,42 @@ export class OneOnOneComponent implements OnInit {
   draftActionText = '';
   draftActionItems: string[] = [];
 
+  // Source of truth is the server file (App_Data/one-on-ones.json). localStorage is only a fallback copy: it is
+  // imported once if the server file is still empty, and used if the API can't be reached.
   ngOnInit(): void {
-    const state = this.load();
-    this.reports = state.reports;
-    this.meetings = state.meetings;
-    this.addSampleNotesOnce();
-    this.save();
+    this.api.getOneOnOneState().subscribe({
+      next: server => {
+        if (server.reports?.length || server.meetings?.length) {
+          this.apply(server);
+          return;
+        }
+        // First run on the server: bring over this browser's existing notes, else start from sample data.
+        const local = this.loadLocal();
+        this.apply(local ?? this.seedWithSampleNotes());
+        this.save();
+      },
+      error: () => {
+        this.offline = true;
+        this.apply(this.loadLocal() ?? this.seedWithSampleNotes());
+      }
+    });
   }
 
-  // One-time sample history (2 dated post notes per seeded person, within the last 2 weeks) so the AI summary
-  // has something to read. Additive — it never touches meetings/notes already saved in this browser.
-  private addSampleNotesOnce(): void {
-    try {
-      if (localStorage.getItem(SAMPLE_NOTES_FLAG)) return;
-      localStorage.setItem(SAMPLE_NOTES_FLAG, '1');
-    } catch {
-      return;
-    }
+  private apply(state: OneOnOneState): void {
+    this.reports = state.reports ?? [];
+    this.meetings = state.meetings ?? [];
+  }
 
+  private seedWithSampleNotes(): OneOnOneState {
+    const state = this.seedDefaults();
+    this.apply(state);
+    this.addSampleNotes();
+    return { reports: this.reports, meetings: this.meetings };
+  }
+
+  // Sample history (2 dated post notes per seeded person, within the last 2 weeks) so the AI summary has
+  // something to read on a fresh install.
+  private addSampleNotes(): void {
     const samples: Record<string, { daysAgo: number; note: string; action: string; done: boolean }[]> = {
       Saritha: [
         { daysAgo: 9, note: 'Reviewed current project workload. Comfortable with priorities but flagged the release testing timeline as tight.', action: 'Share the testing timeline concern with the team lead', done: true },
@@ -325,14 +345,14 @@ export class OneOnOneComponent implements OnInit {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 
-  private load(): { reports: DirectReport[]; meetings: ScheduledMeeting[] } {
+  private loadLocal(): OneOnOneState | null {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch {
-      // fall through to seed defaults
+      // unreadable — treat as no local copy
     }
-    return this.seedDefaults();
+    return null;
   }
 
   // Sample-purpose starter data so the tab isn't empty on first visit — one upcoming meeting
@@ -386,10 +406,15 @@ export class OneOnOneComponent implements OnInit {
   }
 
   private save(): void {
+    const state: OneOnOneState = { reports: this.reports, meetings: this.meetings };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ reports: this.reports, meetings: this.meetings }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); // fallback copy
     } catch {
       // ignore storage errors (private browsing, quota)
     }
+    if (this.offline) return;
+    this.api.saveOneOnOneState(state).subscribe({
+      error: () => (this.saveError = 'Could not save to the server. Your changes are kept in this browser only.')
+    });
   }
 }

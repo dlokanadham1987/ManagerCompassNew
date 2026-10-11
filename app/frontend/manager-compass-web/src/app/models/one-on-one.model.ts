@@ -15,6 +15,12 @@ export interface PostNote {
   text: string;
 }
 
+/** Everything the 1:1 tab saves; post notes and action items live inside each meeting. */
+export interface OneOnOneState {
+  reports: DirectReport[];
+  meetings: ScheduledMeeting[];
+}
+
 export interface OneOnOneSummaryRequest {
   reportName: string;
   from: string; // yyyy-MM-dd, inclusive

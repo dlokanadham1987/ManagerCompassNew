@@ -3,7 +3,9 @@
     <h2>1:1s &mdash; scheduled meetings</h2>
     <button type="button" class="oto-schedule-btn" (click)="openScheduleModal()">+ Schedule Meeting</button>
   </div>
-  <span class="sub">Personal working notes, saved on this device &middot; not an official performance record</span>
+  <span class="sub">Personal working notes, saved by the API &middot; not an official performance record</span>
+  <div class="empty" *ngIf="offline"><strong>The API isn't reachable.</strong> Showing a copy saved in this browser; changes won't reach the server until it's back.</div>
+  <div class="empty" *ngIf="saveError"><strong>{{ saveError }}</strong></div>
 
   <div class="kpi-grid oto-kpi-row">
     <div class="kpi" [style.--tc]="'#2C7A78'">

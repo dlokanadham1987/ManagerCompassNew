@@ -6,7 +6,7 @@ import { Snapshot } from '../models/snapshot.model';
 import { LeadershipCard } from '../models/leadership.model';
 import { AdoptionMetrics } from '../models/adoption.model';
 import { Team, TeamComment, TeamCommentInput } from '../models/team-notes.model';
-import { OneOnOneSummaryRequest, OneOnOneSummaryResponse } from '../models/one-on-one.model';
+import { OneOnOneState, OneOnOneSummaryRequest, OneOnOneSummaryResponse } from '../models/one-on-one.model';
 import { DatasetInfo, PagedColumnResult, IdentifierGridResult } from '../models/data-explorer.model';
 
 /**
@@ -68,6 +68,14 @@ export class ApiService {
 
   ask(text: string, topicKey?: string): Observable<AskResponse> {
     return this.http.post<AskResponse>(`${this.base}/assistant/ask`, { text, topicKey });
+  }
+
+  getOneOnOneState(): Observable<OneOnOneState> {
+    return this.http.get<OneOnOneState>(`${this.base}/oneonone/state`);
+  }
+
+  saveOneOnOneState(state: OneOnOneState): Observable<void> {
+    return this.http.put<void>(`${this.base}/oneonone/state`, state);
   }
 
   summarizeOneOnOne(request: OneOnOneSummaryRequest): Observable<OneOnOneSummaryResponse> {

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using ManagerCompass.Api.Models;
 using ManagerCompass.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -27,13 +28,31 @@ public class OneOnOneController : ControllerBase
     private readonly IAiClient _claude;
     private readonly ITeamNotesService _teamNotes;
 
+    private readonly IOneOnOneStore _store;
     private readonly ILogger<OneOnOneController> _logger;
 
-    public OneOnOneController(IAiClient claude, ITeamNotesService teamNotes, ILogger<OneOnOneController> logger)
+    public OneOnOneController(IAiClient claude, ITeamNotesService teamNotes, IOneOnOneStore store, ILogger<OneOnOneController> logger)
     {
         _claude = claude;
         _teamNotes = teamNotes;
+        _store = store;
         _logger = logger;
+    }
+
+    /// <summary>The saved 1:1 state: { reports: [...], meetings: [...] } — post notes and action items live inside each meeting.</summary>
+    [HttpGet("state")]
+    public IActionResult GetState() => Content(_store.Get(), "application/json");
+
+    [HttpPut("state")]
+    public IActionResult SaveState([FromBody] JsonElement state)
+    {
+        if (state.ValueKind != JsonValueKind.Object ||
+            !state.TryGetProperty("reports", out var reports) || reports.ValueKind != JsonValueKind.Array ||
+            !state.TryGetProperty("meetings", out var meetings) || meetings.ValueKind != JsonValueKind.Array)
+            return BadRequest("Expected an object with 'reports' and 'meetings' arrays.");
+
+        _store.Save(state);
+        return NoContent();
     }
 
     [HttpPost("summarize")]
