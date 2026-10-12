@@ -1,0 +1,183 @@
+<section class="view tn">
+  <div class="kpi-head">
+    <h2>Team Notes</h2>
+    <button type="button" class="tn-primary" (click)="openAdd()" [disabled]="loading || !!error">+ New note</button>
+  </div>
+  <span class="sub">Your observations on each team and team member &middot; saved by the API &middot; not an official performance record</span>
+
+  <div class="kpi-grid tn-kpis">
+    <div class="kpi" [style.--tc]="'#2C7A78'">
+      <div class="label">Teams</div>
+      <div class="value">{{ teams.length }}</div>
+      <div class="sub2">tracked here</div>
+    </div>
+    <div class="kpi" [style.--tc]="'#2E8C9C'">
+      <div class="label">Team members</div>
+      <div class="value">{{ members.length }}</div>
+      <div class="sub2">across all teams</div>
+    </div>
+    <div class="kpi" [style.--tc]="'#4D75AB'">
+      <div class="label">Total notes</div>
+      <div class="value">{{ comments.length }}</div>
+      <div class="sub2">team and member notes</div>
+    </div>
+  </div>
+
+  <div class="tn-toolbar" *ngIf="!loading && !error">
+    <label class="tn-search">
+      <span class="tn-visually-hidden">Search notes</span>
+      <input type="search" [(ngModel)]="search" placeholder="Search notes by title or description" />
+    </label>
+  </div>
+
+  <div class="empty" *ngIf="loading"><strong>Loading&hellip;</strong></div>
+  <div class="empty tn-error" *ngIf="error"><strong>{{ error }}</strong></div>
+
+  <article class="card tn-team" *ngFor="let team of teams" [style.--tc]="'#2E8C9C'">
+    <header class="tn-team-head">
+      <button type="button" class="tn-team-toggle" (click)="toggleTeam(team.id)" [attr.aria-expanded]="!isCollapsed(team.id)">
+        <span class="tn-chevron" [class.open]="!isCollapsed(team.id)" aria-hidden="true">&#9656;</span>
+        <span class="tn-team-name">{{ team.name }}</span>
+      </button>
+      <div class="tn-team-meta">
+        <span class="tn-chip">{{ team.members.length }} members</span>
+        <span class="tn-chip">{{ teamTotal(team) }} notes</span>
+      </div>
+    </header>
+
+    <div class="tn-team-body" *ngIf="!isCollapsed(team.id)">
+      <div class="tn-section-head">
+        <span class="panel-head">Team notes</span>
+        <button type="button" class="tn-ghost" (click)="openAdd('team', team.id)">+ Add team note</button>
+      </div>
+      <ng-container *ngTemplateOutlet="noteList; context:{ type: 'team', id: team.id, empty: 'No team-level notes yet.' }"></ng-container>
+
+      <div class="tn-section-head tn-members-head">
+        <span class="panel-head">Team members</span>
+      </div>
+      <div class="tn-members">
+        <section class="tn-member" *ngFor="let member of team.members">
+          <div class="tn-member-head">
+            <span class="tn-avatar" aria-hidden="true">{{ initials(member.name) }}</span>
+            <div class="tn-member-name">
+              <strong>{{ member.name }}</strong>
+              <span class="sub3">{{ countFor('member', member.id) }} notes</span>
+            </div>
+            <button type="button" class="tn-ghost" (click)="openAdd('member', member.id)" [attr.aria-label]="'Add note for ' + member.name">+ Add</button>
+          </div>
+          <ng-container *ngTemplateOutlet="noteList; context:{ type: 'member', id: member.id, empty: 'No notes yet.' }"></ng-container>
+        </section>
+      </div>
+    </div>
+  </article>
+
+  <div class="meta">These are your personal working notes, not an official performance record. Document formal ratings and reviews in UKG per your Talent Review process.</div>
+</section>
+
+<!-- A list of note cards for one team or member. Each card has View / Edit / Delete. -->
+<ng-template #noteList let-type="type" let-id="id" let-empty="empty">
+  <div class="tn-empty" *ngIf="!commentsFor(type, id).length">
+    {{ search.trim() && countFor(type, id) ? 'No notes match your search.' : empty }}
+  </div>
+  <ul class="tn-notes" *ngIf="commentsFor(type, id).length">
+    <li class="tn-note" *ngFor="let c of commentsFor(type, id)">
+      <button type="button" class="tn-note-main" (click)="openView(c)" [attr.aria-label]="'View note: ' + c.title">
+        <span class="tn-note-title">
+          {{ c.title }}
+        </span>
+        <span class="tn-note-desc" *ngIf="c.description">{{ c.description }}</span>
+        <span class="tn-note-date">
+          {{ c.updatedAt | date:'MMM d, y, h:mm a' }}<ng-container *ngIf="wasEdited(c)"> &middot; edited</ng-container>
+        </span>
+      </button>
+      <div class="tn-note-actions">
+        <button type="button" class="tn-icon" (click)="openView(c)" title="View" aria-label="View note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button type="button" class="tn-icon" (click)="openEdit(c)" title="Edit" aria-label="Edit note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        </button>
+        <button type="button" class="tn-icon tn-icon-danger" (click)="openDelete(c)" title="Delete" aria-label="Delete note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </li>
+  </ul>
+</ng-template>
+
+<!-- ============ Popups ============ -->
+<div class="tn-backdrop" *ngIf="modal !== 'none'" (click)="closeModal()" (keydown.escape)="closeModal()" role="presentation">
+
+  <!-- View -->
+  <div class="tn-modal" *ngIf="modal === 'view' && activeComment" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="tn-view-title">
+    <div class="tn-modal-head">
+      <div>
+        <span class="tn-chip">{{ activeComment.targetType === 'team' ? 'Team note' : 'Member note' }} &middot; {{ targetLabel(activeComment) }}</span>
+        <h3 id="tn-view-title">{{ activeComment.title }}</h3>
+      </div>
+      <button type="button" class="tn-close" (click)="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <p class="tn-view-desc">{{ activeComment.description || 'No description.' }}</p>
+    <dl class="tn-times">
+      <div><dt>Created</dt><dd>{{ activeComment.createdAt | date:'medium' }}</dd></div>
+      <div *ngIf="wasEdited(activeComment)"><dt>Last edited</dt><dd>{{ activeComment.updatedAt | date:'medium' }}</dd></div>
+    </dl>
+    <div class="tn-modal-actions">
+      <button type="button" class="tn-danger-ghost" (click)="openDelete(activeComment)">Delete</button>
+      <span class="tn-spacer"></span>
+      <button type="button" class="tn-secondary" (click)="closeModal()">Close</button>
+      <button type="button" class="tn-primary" (click)="openEdit(activeComment)">Edit</button>
+    </div>
+  </div>
+
+  <!-- Add / Edit -->
+  <form class="tn-modal" *ngIf="modal === 'form'" (click)="$event.stopPropagation()" (ngSubmit)="save()" role="dialog" aria-modal="true" aria-labelledby="tn-form-title">
+    <div class="tn-modal-head">
+      <h3 id="tn-form-title">{{ activeComment ? 'Edit note' : 'New note' }}</h3>
+      <button type="button" class="tn-close" (click)="closeModal()" aria-label="Close">&times;</button>
+    </div>
+
+    <label class="tn-field">
+      <span>About</span>
+      <select name="target" [(ngModel)]="formTarget" [disabled]="!!activeComment">
+        <ng-container *ngFor="let team of teams">
+          <option [value]="'team:' + team.id">Team &mdash; {{ team.name }}</option>
+          <option *ngFor="let m of team.members" [value]="'member:' + m.id">{{ m.name }}</option>
+        </ng-container>
+      </select>
+    </label>
+
+    <label class="tn-field">
+      <span>Title <em>{{ draftTitle.length }}/{{ titleMax }}</em></span>
+      <input type="text" name="title" [(ngModel)]="draftTitle" [maxlength]="titleMax" placeholder="e.g. Great ownership on the release" autofocus />
+    </label>
+
+    <label class="tn-field">
+      <span>Description <em>{{ draftDescription.length }}/{{ descriptionMax }}</em></span>
+      <textarea name="description" [(ngModel)]="draftDescription" [maxlength]="descriptionMax" rows="6" placeholder="What did you observe? Keep it factual."></textarea>
+    </label>
+
+    <p class="tn-form-error" *ngIf="formError" role="alert">{{ formError }}</p>
+
+    <div class="tn-modal-actions">
+      <span class="tn-spacer"></span>
+      <button type="button" class="tn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
+      <button type="submit" class="tn-primary" [disabled]="saving || !draftTitle.trim()">
+        {{ saving ? 'Saving…' : (activeComment ? 'Save changes' : 'Add note') }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Delete confirmation -->
+  <div class="tn-modal tn-modal-sm" *ngIf="modal === 'delete' && activeComment" (click)="$event.stopPropagation()" role="alertdialog" aria-modal="true" aria-labelledby="tn-del-title">
+    <h3 id="tn-del-title">Delete this note?</h3>
+    <p class="tn-del-text">&ldquo;{{ activeComment.title }}&rdquo; will be permanently removed. This can't be undone.</p>
+    <div class="tn-modal-actions">
+      <span class="tn-spacer"></span>
+      <button type="button" class="tn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
+      <button type="button" class="tn-danger" (click)="confirmDelete()" [disabled]="saving">{{ saving ? 'Deleting…' : 'Delete' }}</button>
+    </div>
+  </div>
+</div>
+
+<div class="tn-toast" *ngIf="toast" role="status">{{ toast }}</div>

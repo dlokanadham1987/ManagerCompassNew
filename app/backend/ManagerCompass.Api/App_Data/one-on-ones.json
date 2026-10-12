@@ -1,0 +1,217 @@
+{
+  "reports": [
+    {
+      "id": "1791633319945-882frhg",
+      "name": "Saritha",
+      "email": ""
+    },
+    {
+      "id": "1791633319945-cacezdr",
+      "name": "Rishika",
+      "email": ""
+    },
+    {
+      "id": "1791633319945-2zo294j",
+      "name": "Srija",
+      "email": ""
+    }
+  ],
+  "meetings": [
+    {
+      "id": "1791633319946-q13e088",
+      "reportId": "1791633319945-882frhg",
+      "reportName": "Saritha",
+      "startsAt": "2026-10-11T10:00",
+      "durationMinutes": 30,
+      "preNotes": [
+        "Check in on current project workload and priorities.",
+        "Discuss recent feedback on cross-team collaboration.",
+        "Ask about career development interests for next quarter."
+      ],
+      "aiSummary": "**Themes**  \n- Saritha is managing her project workload effectively and is proactive in identifying potential risks, such as the tight release testing timeline.  \n- She has established a positive working relationship with the platform team, which enhances cross-team collaboration.  \n- Saritha demonstrates strong ownership in her role, particularly in coordinating release preparations and addressing challenges early.  \n\n**Open items**  \n- Introduce Saritha to the platform team contact.  \n\n**Suggested talking points**  \n- Discuss Saritha\u0027s concerns regarding the release testing timeline and any support she may need.  \n- Explore the possibility of setting up regular syncs with the platform team to maintain collaboration.  \n- Acknowledge her quick resolution of P1 issues and the positive impact of her proactive approach on the team.",
+      "postNotes": [],
+      "actionItems": [],
+      "nextFollowUpDate": null,
+      "completed": false,
+      "aiSummaryPeriod": "2026-09-27 to 2026-10-11"
+    },
+    {
+      "id": "1791633319946-ruhrtu2",
+      "reportId": "1791633319945-cacezdr",
+      "reportName": "Rishika",
+      "startsAt": "2026-10-11T11:00",
+      "durationMinutes": 30,
+      "preNotes": [
+        "Review progress on items from the last discussion.",
+        "Talk through any blockers or support needed.",
+        "Explore interest in upcoming stretch assignments."
+      ],
+      "aiSummary": null,
+      "postNotes": [],
+      "actionItems": [],
+      "nextFollowUpDate": null,
+      "completed": false
+    },
+    {
+      "id": "1791633319946-vz0aff1",
+      "reportId": "1791633319945-2zo294j",
+      "reportName": "Srija",
+      "startsAt": "2026-10-11T12:00",
+      "durationMinutes": 30,
+      "preNotes": [
+        "Discuss recent wins and highlights.",
+        "Check in on team dynamics and morale.",
+        "Align on goals for the next sprint/cycle."
+      ],
+      "aiSummary": null,
+      "postNotes": [],
+      "actionItems": [],
+      "nextFollowUpDate": null,
+      "completed": false
+    },
+    {
+      "id": "1791727652639-f9cnhtq",
+      "reportId": "1791633319945-882frhg",
+      "reportName": "Saritha",
+      "startsAt": "2026-10-02T10:00",
+      "durationMinutes": 30,
+      "preNotes": [],
+      "aiSummary": null,
+      "postNotes": [
+        {
+          "id": "1791727652639-u3k1qdz",
+          "date": "2026-10-02",
+          "text": "Reviewed current project workload. Comfortable with priorities but flagged the release testing timeline as tight."
+        }
+      ],
+      "actionItems": [
+        {
+          "text": "Share the testing timeline concern with the team lead",
+          "done": true
+        }
+      ],
+      "nextFollowUpDate": null,
+      "completed": true
+    },
+    {
+      "id": "1791727652639-7q885zu",
+      "reportId": "1791633319945-882frhg",
+      "reportName": "Saritha",
+      "startsAt": "2026-10-08T10:00",
+      "durationMinutes": 30,
+      "preNotes": [],
+      "aiSummary": null,
+      "postNotes": [
+        {
+          "id": "1791727652639-jjq4dpt",
+          "date": "2026-10-08",
+          "text": "Talked about cross-team collaboration; discussed pairing with the platform team on the integration work."
+        }
+      ],
+      "actionItems": [
+        {
+          "text": "Introduce Saritha to the platform team contact",
+          "done": false
+        }
+      ],
+      "nextFollowUpDate": null,
+      "completed": true
+    },
+    {
+      "id": "1791727652639-479c9em",
+      "reportId": "1791633319945-cacezdr",
+      "reportName": "Rishika",
+      "startsAt": "2026-10-01T10:00",
+      "durationMinutes": 30,
+      "preNotes": [],
+      "aiSummary": null,
+      "postNotes": [
+        {
+          "id": "1791727652639-777nnej",
+          "date": "2026-10-01",
+          "text": "Walked through last sprint items. Two tasks carried over because the requirements were unclear."
+        }
+      ],
+      "actionItems": [
+        {
+          "text": "Clarify requirements for the reporting task",
+          "done": true
+        }
+      ],
+      "nextFollowUpDate": null,
+      "completed": true
+    },
+    {
+      "id": "1791727652639-dghk2uy",
+      "reportId": "1791633319945-cacezdr",
+      "reportName": "Rishika",
+      "startsAt": "2026-10-07T10:00",
+      "durationMinutes": 30,
+      "preNotes": [],
+      "aiSummary": null,
+      "postNotes": [
+        {
+          "id": "1791727652639-wz4bszy",
+          "date": "2026-10-07",
+          "text": "Interested in a stretch assignment on the dashboard work; wants more exposure to customer-facing demos."
+        }
+      ],
+      "actionItems": [
+        {
+          "text": "Find a demo opportunity for next month",
+          "done": false
+        }
+      ],
+      "nextFollowUpDate": null,
+      "completed": true
+    },
+    {
+      "id": "1791727652639-8svq4c3",
+      "reportId": "1791633319945-2zo294j",
+      "reportName": "Srija",
+      "startsAt": "2026-10-03T10:00",
+      "durationMinutes": 30,
+      "preNotes": [],
+      "aiSummary": null,
+      "postNotes": [
+        {
+          "id": "1791727652639-0xgc6f4",
+          "date": "2026-10-03",
+          "text": "Celebrated the successful demo. Team morale is good, with some concern about meeting-heavy days."
+        }
+      ],
+      "actionItems": [
+        {
+          "text": "Review recurring meetings to protect focus time",
+          "done": true
+        }
+      ],
+      "nextFollowUpDate": null,
+      "completed": true
+    },
+    {
+      "id": "1791727652639-5pxe4c9",
+      "reportId": "1791633319945-2zo294j",
+      "reportName": "Srija",
+      "startsAt": "2026-10-09T10:00",
+      "durationMinutes": 30,
+      "preNotes": [],
+      "aiSummary": null,
+      "postNotes": [
+        {
+          "id": "1791727652639-i4jq1hy",
+          "date": "2026-10-09",
+          "text": "Aligned on goals for the next sprint. She would like to mentor a new joiner."
+        }
+      ],
+      "actionItems": [
+        {
+          "text": "Pair Srija with the new joiner",
+          "done": false
+        }
+      ],
+      "nextFollowUpDate": null,
+      "completed": true
+    }
+  ]
+}

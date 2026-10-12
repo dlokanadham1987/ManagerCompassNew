@@ -3,7 +3,9 @@
     <h2>1:1s &mdash; scheduled meetings</h2>
     <button type="button" class="oto-schedule-btn" (click)="openScheduleModal()">+ Schedule Meeting</button>
   </div>
-  <span class="sub">Personal working notes, saved on this device &middot; not an official performance record</span>
+  <span class="sub">Personal working notes, saved by the API &middot; not an official performance record</span>
+  <div class="empty" *ngIf="offline"><strong>The API isn't reachable.</strong> Showing a copy saved in this browser; changes won't reach the server until it's back.</div>
+  <div class="empty" *ngIf="saveError"><strong>{{ saveError }}</strong></div>
 
   <div class="kpi-grid oto-kpi-row">
     <div class="kpi" [style.--tc]="'#2C7A78'">
@@ -59,16 +61,15 @@
           <li *ngFor="let text of m.preNotes">{{ text }}</li>
         </ul>
 
-        <ng-container *ngIf="!m.aiSummary">
-          <button type="button" class="oto-ai-btn" [disabled]="aiSummaryLoadingId === m.id" (click)="generateAiSummary(m)">
-            <span *ngIf="aiSummaryLoadingId !== m.id">&#10024; Generate AI summary of last 2 weeks</span>
-            <span *ngIf="aiSummaryLoadingId === m.id">Summarizing&hellip;</span>
-          </button>
-        </ng-container>
-        <div class="oto-ai-summary" *ngIf="m.aiSummary">
-          <span class="oto-ai-label">AI summary (illustrative)</span>
-          {{ m.aiSummary }}
-        </div>
+        <app-ai-summary
+          [idPrefix]="'ai-' + m.id"
+          [summary]="m.aiSummary"
+          [period]="m.aiSummaryPeriod ?? null"
+          [loading]="aiSummaryLoadingId === m.id"
+          [error]="aiSummaryError?.id === m.id ? aiSummaryError?.message ?? null : null"
+          hint="The notes in the selected date range (and your Team Notes for this person) are sent to an AI model to write the summary."
+          (generate)="generateAiSummary(m, $event)">
+        </app-ai-summary>
       </div>
     </details>
 

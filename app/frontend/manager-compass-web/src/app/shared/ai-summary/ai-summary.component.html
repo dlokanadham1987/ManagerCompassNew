@@ -1,0 +1,50 @@
+<div class="ais">
+  <div class="ais-bar">
+    <button type="button" class="ais-generate" [disabled]="loading || !rangeValid" (click)="run()">
+      <span *ngIf="!loading">&#10024; {{ summary ? 'Regenerate AI summary' : 'Generate AI summary' }}</span>
+      <span *ngIf="loading">Summarizing&hellip;</span>
+    </button>
+
+    <div class="ais-range">
+      <button
+        type="button"
+        class="ais-cal"
+        (click)="togglePicker()"
+        [attr.aria-expanded]="pickerOpen"
+        [attr.aria-controls]="idPrefix + '-picker'"
+        aria-label="Choose date range"
+        title="Choose date range">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+        <span>{{ rangeLabel }}</span>
+      </button>
+
+      <div class="ais-picker" *ngIf="pickerOpen" [id]="idPrefix + '-picker'">
+        <div class="ais-presets">
+          <button type="button" *ngFor="let p of presets" [class.active]="isPresetActive(p.days)" (click)="choosePreset(p.days)">{{ p.label }}</button>
+        </div>
+        <div class="ais-dates">
+          <label>From
+            <input type="date" [(ngModel)]="from" [max]="to || today" [attr.aria-label]="'From date'" />
+          </label>
+          <label>To
+            <input type="date" [(ngModel)]="to" [min]="from" [max]="today" [attr.aria-label]="'To date'" />
+          </label>
+        </div>
+        <p class="ais-error" *ngIf="!rangeValid">Start date must be on or before the end date.</p>
+        <div class="ais-picker-actions">
+          <button type="button" class="ais-link" (click)="closePicker()">Close</button>
+          <button type="button" class="ais-apply" [disabled]="!rangeValid || loading" (click)="run()">Generate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ais-result" *ngIf="summary">
+    <span class="ais-label">AI summary<ng-container *ngIf="period"> &middot; {{ period }}</ng-container></span>
+    <div class="ais-text">{{ summary }}</div>
+  </div>
+  <p class="ais-error" *ngIf="error" role="alert">{{ error }}</p>
+  <p class="ais-hint" *ngIf="hint">{{ hint }}</p>
+</div>

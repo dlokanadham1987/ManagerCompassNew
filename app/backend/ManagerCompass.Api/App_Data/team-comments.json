@@ -1,0 +1,65 @@
+[
+  {
+    "Id": "c1e975d9a5dc448a806cb9aa9a7615d7",
+    "TargetType": "member",
+    "TargetId": "saritha",
+    "Title": "Strong ownership on release prep",
+    "Description": "Took the lead on coordinating release testing and raised the timeline risk early, which gave the team time to adjust.",
+    "CreatedAt": "2026-10-11T14:28:30.8739774Z",
+    "UpdatedAt": "2026-10-11T14:28:30.8739774Z"
+  },
+  {
+    "Id": "316212a95c6f460f9e87060ea84b5a06",
+    "TargetType": "member",
+    "TargetId": "saritha",
+    "Title": "Collaboration with platform team",
+    "Description": "Built a good working relationship with the platform team during the integration work; would benefit from a regular sync with them.",
+    "CreatedAt": "2026-10-11T14:28:31.2401718Z",
+    "UpdatedAt": "2026-10-11T14:28:31.2401718Z"
+  },
+  {
+    "Id": "03453c96c0db4d02b1682271a8b3754a",
+    "TargetType": "member",
+    "TargetId": "rishika",
+    "Title": "Growing confidence in demos",
+    "Description": "Presented the dashboard progress to stakeholders this week and handled questions well. Keen to take on more customer-facing work.",
+    "CreatedAt": "2026-10-11T14:28:31.6012783Z",
+    "UpdatedAt": "2026-10-11T14:28:31.6012783Z"
+  },
+  {
+    "Id": "557b9b1148664942bcacfc36bded20b8",
+    "TargetType": "member",
+    "TargetId": "rishika",
+    "Title": "Needs clearer requirements upfront",
+    "Description": "Two tasks slipped last sprint because requirements were ambiguous. Agreed to confirm scope with product before starting.",
+    "CreatedAt": "2026-10-11T14:28:31.9739353Z",
+    "UpdatedAt": "2026-10-11T14:28:31.9739353Z"
+  },
+  {
+    "Id": "b45bc82b61c049dc99fdeb00a9bae3db",
+    "TargetType": "member",
+    "TargetId": "srija",
+    "Title": "Positive team energy",
+    "Description": "Keeps morale up after the demo and checks in on teammates. Mentioned meeting-heavy days are hurting focus time.",
+    "CreatedAt": "2026-10-11T14:28:32.3368431Z",
+    "UpdatedAt": "2026-10-11T14:28:32.3368431Z"
+  },
+  {
+    "Id": "6788d71d63ce47e2aaa9f109677b9900",
+    "TargetType": "member",
+    "TargetId": "srija",
+    "Title": "Interested in mentoring",
+    "Description": "Offered to mentor the new joiner. Good opportunity to build her coaching skills next sprint.",
+    "CreatedAt": "2026-10-11T14:28:32.6986449Z",
+    "UpdatedAt": "2026-10-11T14:28:32.6986449Z"
+  },
+  {
+    "Id": "61881a31d74f46dfa7a1ccddfc77827b",
+    "TargetType": "member",
+    "TargetId": "saritha",
+    "Title": "Quick resolution P1",
+    "Description": "recently saritha fixed teh 2 P1 issues quickly by extending the time. she wil ldone very well",
+    "CreatedAt": "2026-10-11T14:31:34.6501247Z",
+    "UpdatedAt": "2026-10-11T14:31:34.6501247Z"
+  }
+]
